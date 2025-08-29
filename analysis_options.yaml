@@ -1,0 +1,52 @@
+# Configurazione analyzer per Sistema Anti-Nervoso
+# Regole di linting per mantenere alta la qualità del codice
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  errors:
+    # Tratta i warning come errori per mantenere alta la qualità
+    invalid_annotation_target: ignore
+    missing_required_param: error
+    missing_return: error
+
+linter:
+  rules:
+    # Stile e leggibilità
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    
+    # Performance
+    avoid_function_literals_in_foreach_calls: true
+    prefer_for_elements_to_map_fromIterable: true
+    prefer_spread_collections: true
+    
+    # Sicurezza e robustezza
+    avoid_print: true
+    avoid_web_libraries_in_flutter: true
+    cancel_subscriptions: true
+    close_sinks: true
+    
+    # Documentazione
+    public_member_api_docs: false # Disabilitato per ora
+    lines_longer_than_80_chars: false # Flessibilità per UI code
+    
+    # Best practices
+    use_key_in_widget_constructors: true
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
+    use_full_hex_values_for_flutter_colors: true
+    
+    # Null safety
+    avoid_null_checks_in_equality_operators: true
+    prefer_null_aware_operators: true
