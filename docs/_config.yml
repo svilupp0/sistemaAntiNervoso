@@ -1,0 +1,34 @@
+# Configurazione Jekyll per GitHub Pages
+# Disabilita Jekyll processing per Flutter app
+
+# Includi tutti i file che iniziano con underscore
+include:
+  - _redirects
+
+# Plugin per GitHub Pages
+plugins:
+  - jekyll-redirect-from
+
+# Configurazione per servire file statici
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Disabilita processing automatico
+safe: true
+incremental: false
+
+# MIME types per GitHub Pages
+defaults:
+  - scope:
+      path: "*.js"
+    values:
+      content-type: "application/javascript"
+  - scope:
+      path: "*.wasm"
+    values:
+      content-type: "application/wasm"
+  - scope:
+      path: "*.json"
+    values:
+      content-type: "application/json"

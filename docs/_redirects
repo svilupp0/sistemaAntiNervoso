@@ -1,0 +1,20 @@
+# Netlify redirects for Flutter Web SPA
+# Redirect all non-file requests to index.html for client-side routing
+
+# API routes (if any) - add specific API routes here
+# /api/* /api/:splat 200
+
+# Static assets - serve directly
+/*.js /sistemaAntiNervoso/:splat 200
+/*.wasm /sistemaAntiNervoso/:splat 200
+/*.json /sistemaAntiNervoso/:splat 200
+/*.css /sistemaAntiNervoso/:splat 200
+/*.png /sistemaAntiNervoso/:splat 200
+/*.svg /sistemaAntiNervoso/:splat 200
+/*.ico /sistemaAntiNervoso/:splat 200
+/*.woff2 /sistemaAntiNervoso/:splat 200
+/*.woff /sistemaAntiNervoso/:splat 200
+/*.ttf /sistemaAntiNervoso/:splat 200
+
+# Fallback for all other routes - SPA routing
+/* /sistemaAntiNervoso/index.html 200
