@@ -6,15 +6,15 @@ self.addEventListener('push', (event) => {
   try { data = event.data ? event.data.json() : {}; } catch (_) {}
   const title = data.title || 'Sistema Anti-Nervoso';
   const body = data.body || 'Promemoria ciclo';
-  const icon = data.icon || '/icons/Icon-192.png';
-  const badge = data.badge || '/icons/badge.png';
+  const icon = data.icon || 'icons/Icon-192.png';
+  const badge = data.badge || 'icons/Icon-192.png';
 
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
       icon,
       badge,
-      data: data.clickUrl || '/',
+      data: data.clickUrl || './',
     })
   );
 });
@@ -98,7 +98,7 @@ function scheduleNotification(delay, options) {
       tag: options.tag,
       requireInteraction: true, // Notifica persistente
       vibrate: [200, 100, 200], // Vibrazione
-      data: '/'
+      data: './'
     });
   }, delay);
 }
@@ -111,3 +111,17 @@ function clearScheduledNotifications() {
 }
 
 console.log('Service Worker Sistema Anti-Nervoso caricato con successo!');
+self.addEventListener('message', (event) => {
+  try { console.log('SW: message event received', event.data); } catch (_) {}
+  if (event.data && event.data.type === 'SHOW_TEST_NOTIFICATION_NOW') {
+    const title = (event.data && event.data.title) || '🧪 Test notifica';
+    const body = (event.data && event.data.body) || 'Notifica di test dal Service Worker';
+    const icon = (event.data && event.data.icon) || 'icons/Icon-192.png';
+    const options = { body, icon };
+    if (event.waitUntil) {
+      event.waitUntil(self.registration.showNotification(title, options));
+    } else {
+      self.registration.showNotification(title, options);
+    }
+  }
+});

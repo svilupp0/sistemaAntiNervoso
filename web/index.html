@@ -41,7 +41,7 @@
 
     async function registerSWAndSubscribe() {
       // Registra il tuo SW
-      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
 
       // iOS richiede un gesto dell'utente prima di chiedere il permesso
       const perm = await Notification.requestPermission();
@@ -54,7 +54,7 @@
       });
 
       // Invia la subscription al tuo backend per salvarla
-      await fetch('/api/subscribe', {
+      await fetch('api/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(sub),
