@@ -22,6 +22,8 @@ class _HomePageState extends State<HomePage> {
   final DateFormat formatter = DateFormat('dd/MM/yyyy');
   final Random _random = Random();
   bool _isLoading = false; // Stato di caricamento
+  bool _notificationsEnabled = false; // Stato notifiche
+  String _notificationStatus = 'unknown'; // Stato permessi
 
   @override
   void initState() {
@@ -33,14 +35,98 @@ class _HomePageState extends State<HomePage> {
   /// Inizializza il servizio notifiche
   Future<void> _initializeNotifications() async {
     try {
+      // Controlla lo stato dei permessi senza richiedere
+      _checkNotificationPermission();
+      
       final bool success = await NotificationService.initialize();
       if (success) {
         print('Servizio notifiche inizializzato con successo');
+        setState(() {
+          _notificationsEnabled = true;
+        });
       } else {
         print('Impossibile inizializzare le notifiche');
+        setState(() {
+          _notificationsEnabled = false;
+        });
       }
     } catch (e) {
       print('Errore nell\'inizializzazione delle notifiche: $e');
+      setState(() {
+        _notificationsEnabled = false;
+      });
+    }
+  }
+
+  /// Controlla lo stato dei permessi notifiche
+  void _checkNotificationPermission() {
+    try {
+      final String permission = NotificationService.getNotificationPermission();
+      setState(() {
+        _notificationStatus = permission;
+        _notificationsEnabled = permission == 'granted';
+      });
+      print('Stato permessi notifiche: $permission');
+    } catch (e) {
+      print('Errore nel controllo permessi: $e');
+    }
+  }
+
+  /// Attiva manualmente le notifiche
+  Future<void> _enableNotifications() async {
+    try {
+      final bool success = await NotificationService.initialize();
+      if (success) {
+        setState(() {
+          _notificationsEnabled = true;
+          _notificationStatus = 'granted';
+        });
+        
+        // Se c'è già una data del ciclo, programma le notifiche
+        if (inizioCiclo != null) {
+          await _scheduleNotifications(inizioCiclo!);
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Notifiche attivate con successo!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ Impossibile attivare le notifiche'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Errore nell\'attivazione delle notifiche: $e');
+    }
+  }
+
+  /// Mostra notifica di test
+  Future<void> _showTestNotification() async {
+    try {
+      await NotificationService.showTestNotification();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('🧪 Notifica di test inviata!'),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Errore nell\'invio della notifica di test: $e');
     }
   }
 
@@ -187,6 +273,11 @@ class _HomePageState extends State<HomePage> {
                             ? AppConstants.scegliDataCiclo
                             : AppConstants.aggiornaDataCiclo),
                   ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Sezione notifiche
+                  _buildNotificationSection(),
                   const SizedBox(height: 30),
 
                   // Blocchi informazioni e calendario
@@ -215,6 +306,89 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Costruisce la sezione per le notifiche
+  Widget _buildNotificationSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                _notificationsEnabled ? Icons.notifications_active : Icons.notifications_off,
+                color: _notificationsEnabled ? Colors.green : Colors.red,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _notificationsEnabled 
+                    ? 'Notifiche attive 🔔'
+                    : 'Notifiche disattivate ❌',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _notificationsEnabled
+              ? 'Il fidanzato riceverà avvisi nei giorni gialli e rossi'
+              : 'Attiva le notifiche per avvisare il fidanzato',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (!_notificationsEnabled)
+                ElevatedButton.icon(
+                  onPressed: _enableNotifications,
+                  icon: const Icon(Icons.notifications, size: 18),
+                  label: const Text('Attiva'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              if (_notificationsEnabled)
+                ElevatedButton.icon(
+                  onPressed: _showTestNotification,
+                  icon: const Icon(Icons.science, size: 18),
+                  label: const Text('Test'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
