@@ -1,9 +1,7 @@
-import 'dart:html' as html;
 import 'dart:js' as js;
 
 /// Service per gestire le notifiche push del Sistema Anti-Nervoso
 class NotificationService {
-  
   /// Registra il service worker e richiede i permessi per le notifiche
   static Future<bool> initialize() async {
     try {
@@ -24,7 +22,10 @@ class NotificationService {
   }
 
   /// Programma le notifiche automatiche per i giorni gialli e rossi
-  static Future<void> scheduleNotifications(DateTime startDate, {int cycleDays = 28}) async {
+  static Future<void> scheduleNotifications(
+    DateTime startDate, {
+    int cycleDays = 28,
+  }) async {
     try {
       if (!_isNotificationSupported()) {
         print('Notifiche non supportate');
@@ -34,10 +35,12 @@ class NotificationService {
       // Chiama la funzione JavaScript per programmare le notifiche
       js.context.callMethod('scheduleNotifications', [
         _dateToJSDate(startDate),
-        cycleDays
+        cycleDays,
       ]);
-      
-      print('Notifiche programmate per il ciclo iniziato il: ${startDate.toIso8601String()}');
+
+      print(
+        'Notifiche programmate per il ciclo iniziato il: ${startDate.toIso8601String()}',
+      );
     } catch (e) {
       print('Errore nella programmazione delle notifiche: $e');
     }
@@ -60,13 +63,16 @@ class NotificationService {
 
   /// Verifica se le notifiche sono supportate dal browser
   static bool _isNotificationSupported() {
-    return js.context.hasProperty('Notification') && 
-           js.context.hasProperty('navigator') &&
-           js.context['navigator'].hasProperty('serviceWorker');
+    return js.context.hasProperty('Notification') &&
+        js.context.hasProperty('navigator') &&
+        js.context['navigator'].hasProperty('serviceWorker');
   }
 
   /// Chiama una funzione JavaScript
-  static Future<dynamic> _callJSFunction(String functionName, [List<dynamic>? args]) async {
+  static Future<dynamic> _callJSFunction(
+    String functionName, [
+    List<dynamic>? args,
+  ]) async {
     try {
       if (js.context.hasProperty(functionName)) {
         return js.context.callMethod(functionName, args);
@@ -88,7 +94,7 @@ class NotificationService {
       date.hour,
       date.minute,
       date.second,
-      date.millisecond
+      date.millisecond,
     ]);
   }
 
@@ -114,16 +120,6 @@ class NotificationService {
       }
 
       // Crea una notifica di test
-      js.JsObject notification = js.JsObject(js.context['Notification'], [
-        '🧪 Test - Sistema Anti-Nervoso',
-        js.JsObject.jsify({
-          'body': 'Notifica di test funzionante! 🎉',
-          'icon': '/icons/Icon-192.png',
-          'badge': '/icons/badge.png',
-          'requireInteraction': true,
-          'vibrate': [200, 100, 200]
-        })
-      ]);
 
       print('Notifica di test inviata');
     } catch (e) {

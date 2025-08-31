@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   final Random _random = Random();
   bool _isLoading = false; // Stato di caricamento
   bool _notificationsEnabled = false; // Stato notifiche
-  String _notificationStatus = 'unknown'; // Stato permessi
+  // Stato permessi
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     try {
       // Controlla lo stato dei permessi senza richiedere
       _checkNotificationPermission();
-      
+
       final bool success = await NotificationService.initialize();
       if (success) {
         print('Servizio notifiche inizializzato con successo');
@@ -63,7 +63,6 @@ class _HomePageState extends State<HomePage> {
     try {
       final String permission = NotificationService.getNotificationPermission();
       setState(() {
-        _notificationStatus = permission;
         _notificationsEnabled = permission == 'granted';
       });
       print('Stato permessi notifiche: $permission');
@@ -79,14 +78,13 @@ class _HomePageState extends State<HomePage> {
       if (success) {
         setState(() {
           _notificationsEnabled = true;
-          _notificationStatus = 'granted';
         });
-        
+
         // Se c'è già una data del ciclo, programma le notifiche
         if (inizioCiclo != null) {
           await _scheduleNotifications(inizioCiclo!);
         }
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -132,7 +130,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _caricaCicloSalvato() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final DateTime? saved = await PrefsHelper.caricaCiclo();
       if (mounted) {
@@ -178,7 +176,7 @@ class _HomePageState extends State<HomePage> {
         inizioCiclo = picked;
       });
       await _salvaCiclo(picked);
-      
+
       // Programma le notifiche automatiche per i giorni gialli e rossi
       await _scheduleNotifications(picked);
     }
@@ -191,11 +189,13 @@ class _HomePageState extends State<HomePage> {
         startDate,
         cycleDays: AppConstants.durataCicloDefault,
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('🔔 Notifiche programmate per giorni gialli e rossi!'),
+            content: Text(
+              '🔔 Notifiche programmate per giorni gialli e rossi!',
+            ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -225,8 +225,8 @@ class _HomePageState extends State<HomePage> {
         AppConstants.durataCicloDefault,
       );
       avviso = CycleCalculator.calcolaAvviso(
-        prossimoCiclo, 
-        AppConstants.giorniPrimaAvviso
+        prossimoCiclo,
+        AppConstants.giorniPrimaAvviso,
       );
     }
 
@@ -241,67 +241,74 @@ class _HomePageState extends State<HomePage> {
           Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 40.0,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                  Text(
-                    AppConstants.titoloApp,
-                    style: mainTitleStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Bottone per scegliere/aggiornare la data del ciclo
-                  ElevatedButton(
-                    onPressed: () => scegliData(context),
-                    style: rainbowButtonStyle(
-                      RainbowColors.all[_random.nextInt(
-                        RainbowColors.all.length,
-                      )],
-                    ),
-                    child: _isLoading 
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(inizioCiclo == null 
-                            ? AppConstants.scegliDataCiclo
-                            : AppConstants.aggiornaDataCiclo),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Sezione notifiche
-                  _buildNotificationSection(),
-                  const SizedBox(height: 30),
-
-                  // Blocchi informazioni e calendario
-                  if (inizioCiclo != null &&
-                      prossimoCiclo != null &&
-                      avviso != null) ...[
                     Text(
-                      'Prossimo ciclo previsto: ${formatter.format(prossimoCiclo)}',
-                      style: infoTextStyle,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Allarme per il fidanzato: ${formatter.format(avviso)} 😈',
-                      style: infoTextStyle,
+                      AppConstants.titoloApp,
+                      style: mainTitleStyle,
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-                    Text(AppConstants.calendarioUmore, style: infoTextStyle),
-                    const SizedBox(height: 10),
-                    CycleCalendar(
-                      startCiclo: inizioCiclo!,
-                      durataCiclo: AppConstants.durataCicloDefault,
-                      faseRossa: AppConstants.faseRossaDefault,
+
+                    // Bottone per scegliere/aggiornare la data del ciclo
+                    ElevatedButton(
+                      onPressed: () => scegliData(context),
+                      style: rainbowButtonStyle(
+                        RainbowColors.all[_random.nextInt(
+                          RainbowColors.all.length,
+                        )],
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              inizioCiclo == null
+                                  ? AppConstants.scegliDataCiclo
+                                  : AppConstants.aggiornaDataCiclo,
+                            ),
                     ),
-                  ],
+
+                    const SizedBox(height: 20),
+
+                    // Sezione notifiche
+                    _buildNotificationSection(),
+                    const SizedBox(height: 30),
+
+                    // Blocchi informazioni e calendario
+                    if (inizioCiclo != null &&
+                        prossimoCiclo != null &&
+                        avviso != null) ...[
+                      Text(
+                        'Prossimo ciclo previsto: ${formatter.format(prossimoCiclo)}',
+                        style: infoTextStyle,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Allarme per il fidanzato: ${formatter.format(avviso)} 😈',
+                        style: infoTextStyle,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(AppConstants.calendarioUmore, style: infoTextStyle),
+                      const SizedBox(height: 10),
+                      CycleCalendar(
+                        startCiclo: inizioCiclo!,
+                        durataCiclo: AppConstants.durataCicloDefault,
+                        faseRossa: AppConstants.faseRossaDefault,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -332,16 +339,18 @@ class _HomePageState extends State<HomePage> {
           Row(
             children: [
               Icon(
-                _notificationsEnabled ? Icons.notifications_active : Icons.notifications_off,
+                _notificationsEnabled
+                    ? Icons.notifications_active
+                    : Icons.notifications_off,
                 color: _notificationsEnabled ? Colors.green : Colors.red,
                 size: 24,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _notificationsEnabled 
-                    ? 'Notifiche attive 🔔'
-                    : 'Notifiche disattivate ❌',
+                  _notificationsEnabled
+                      ? 'Notifiche attive 🔔'
+                      : 'Notifiche disattivate ❌',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -354,12 +363,9 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           Text(
             _notificationsEnabled
-              ? 'Il fidanzato riceverà avvisi nei giorni gialli e rossi'
-              : 'Attiva le notifiche per avvisare il fidanzato',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
+                ? 'Il fidanzato riceverà avvisi nei giorni gialli e rossi'
+                : 'Attiva le notifiche per avvisare il fidanzato',
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
@@ -374,7 +380,10 @@ class _HomePageState extends State<HomePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               if (_notificationsEnabled)
@@ -385,7 +394,10 @@ class _HomePageState extends State<HomePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
                 ),
             ],
