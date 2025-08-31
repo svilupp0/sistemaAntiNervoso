@@ -7,6 +7,7 @@ import 'styles.dart';
 import 'floating_emojis.dart';
 import 'prefs_helper.dart';
 import 'constants.dart';
+import 'notification_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,6 +27,21 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _caricaCicloSalvato();
+    _initializeNotifications();
+  }
+
+  /// Inizializza il servizio notifiche
+  Future<void> _initializeNotifications() async {
+    try {
+      final bool success = await NotificationService.initialize();
+      if (success) {
+        print('Servizio notifiche inizializzato con successo');
+      } else {
+        print('Impossibile inizializzare le notifiche');
+      }
+    } catch (e) {
+      print('Errore nell\'inizializzazione delle notifiche: $e');
+    }
   }
 
   Future<void> _caricaCicloSalvato() async {
@@ -76,6 +92,40 @@ class _HomePageState extends State<HomePage> {
         inizioCiclo = picked;
       });
       await _salvaCiclo(picked);
+      
+      // Programma le notifiche automatiche per i giorni gialli e rossi
+      await _scheduleNotifications(picked);
+    }
+  }
+
+  /// Programma le notifiche per il ciclo
+  Future<void> _scheduleNotifications(DateTime startDate) async {
+    try {
+      await NotificationService.scheduleNotifications(
+        startDate,
+        cycleDays: AppConstants.durataCicloDefault,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('🔔 Notifiche programmate per giorni gialli e rossi!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Errore nella programmazione delle notifiche: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ Errore nella programmazione delle notifiche'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 

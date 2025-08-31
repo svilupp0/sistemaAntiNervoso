@@ -72,6 +72,37 @@
       for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
       return out;
     }
+
+    // Funzione per programmare notifiche automatiche
+    async function scheduleNotifications(startDate, cycleDays = 28) {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        
+        // Invia i dati del ciclo al service worker
+        registration.active.postMessage({
+          type: 'SCHEDULE_NOTIFICATIONS',
+          startDate: startDate.toISOString(),
+          cycleDays: cycleDays
+        });
+        
+        console.log('Notifiche programmate per il ciclo:', startDate);
+      }
+    }
+
+    // Funzione per cancellare notifiche
+    async function clearNotifications() {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        registration.active.postMessage({
+          type: 'CLEAR_NOTIFICATIONS'
+        });
+      }
+    }
+
+    // Esponi le funzioni globalmente per l'uso da Flutter
+    window.scheduleNotifications = scheduleNotifications;
+    window.clearNotifications = clearNotifications;
+    window.registerSWAndSubscribe = registerSWAndSubscribe;
   </script>
 </body>
 </html>
