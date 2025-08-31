@@ -34,5 +34,44 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  
+  <!-- Registrazione Service Worker personalizzato e Push Notifications -->
+  <script>
+    const VAPID_PUBLIC_KEY = 'BGoUDVogUM_NuHP_TP7T78oMkiZMCQXaT1LJNEjSiuT7nVfHRJY_aDrG2DZ13r6UA5u6dt_LuA4OSyEFoo30hZY';
+
+    async function registerSWAndSubscribe() {
+      // Registra il tuo SW
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+
+      // iOS richiede un gesto dell'utente prima di chiedere il permesso
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') return null;
+
+      // Crea la subscription Web Push (standard VAPID)
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+
+      // Invia la subscription al tuo backend per salvarla
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(sub),
+      });
+
+      return sub;
+    }
+
+    // utilità VAPID
+    function urlBase64ToUint8Array(base64String) {
+      const pad = '='.repeat((4 - base64String.length % 4) % 4);
+      const b64 = (base64String + pad).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(b64);
+      const out = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
+      return out;
+    }
+  </script>
 </body>
 </html>
