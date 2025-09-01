@@ -62,13 +62,13 @@ class CycleCalendar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Prepara i dati per il GridView
-    List<Map<String, dynamic>> giorni = [];
+    List<Map<String, dynamic>> giorni = <Map<String, dynamic>>[];
 
     for (int i = 0; i < durataCiclo; i++) {
       DateTime giorno = startCiclo.add(Duration(days: i));
       Color colore = coloreGiorno(giorno);
       
-      giorni.add({
+      giorni.add(<String, dynamic>{
         'numero': DateFormat('d').format(giorno),
         'colore': colore,
         'data': giorno,
@@ -85,12 +85,12 @@ class CycleCalendar extends StatelessWidget {
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 1.0, // quadrati perfetti
-          children: giorni.map((giorno) {
+          children: giorni.map((Map<String, dynamic> giorno) {
             return Container(
               decoration: BoxDecoration(
-                color: giorno['colore'],
+                color: giorno['colore'] as Color,
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: [
+                boxShadow: <BoxShadow>[
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
                     blurRadius: 2,
@@ -100,7 +100,7 @@ class CycleCalendar extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  giorno['numero'],
+                  giorno['numero'] as String,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class CycleCalendar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: <BoxShadow>[
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 4,

@@ -63,17 +63,20 @@ class NotificationService {
 
   /// Verifica se le notifiche sono supportate dal browser
   static bool _isNotificationSupported() {
-    if (!js.context.hasProperty('Notification')) {
+    // Verifica supporto Notification API
+    if (!(js.context.hasProperty('Notification') as bool)) {
       return false;
     }
-    if (!js.context.hasProperty('navigator')) {
+    // Verifica presenza navigator
+    if (!(js.context.hasProperty('navigator') as bool)) {
       return false;
     }
-    final navigator = js.context['navigator'];
+    final js.JsObject? navigator = js.context['navigator'] as js.JsObject?;
     if (navigator == null) {
       return false;
     }
-    return navigator.hasProperty('serviceWorker');
+    // Verifica supporto Service Worker
+    return navigator.hasProperty('serviceWorker') as bool;
   }
 
   /// Chiama una funzione JavaScript
@@ -82,7 +85,7 @@ class NotificationService {
     List<dynamic>? args,
   ]) async {
     try {
-      if (js.context.hasProperty(functionName)) {
+      if (js.context.hasProperty(functionName) as bool) {
         return js.context.callMethod(functionName, args);
       } else {
         throw Exception('Funzione JavaScript $functionName non trovata');
@@ -95,22 +98,35 @@ class NotificationService {
 
   /// Converte una DateTime Dart in un oggetto Date JavaScript
   static js.JsObject _dateToJSDate(DateTime date) {
-    return js.JsObject(js.context['Date'], <int>[
-      date.year,
-      date.month - 1, // JavaScript usa mesi 0-based
-      date.day,
-      date.hour,
-      date.minute,
-      date.second,
-      date.millisecond,
-    ]);
+    try {
+      // Cast esplicito per garantire che Date sia una JsFunction
+      final dynamic dateValue = js.context['Date'];
+      if (dateValue == null) {
+        throw Exception('Date constructor non disponibile');
+      }
+      final js.JsFunction dateConstructor = dateValue as js.JsFunction;
+      return js.JsObject(dateConstructor, <int>[
+        date.year,
+        date.month - 1, // JavaScript usa mesi 0-based
+        date.day,
+        date.hour,
+        date.minute,
+        date.second,
+        date.millisecond,
+      ]);
+    } catch (e) {
+      throw Exception('Errore nella creazione Date JavaScript: $e');
+    }
   }
 
   /// Verifica lo stato dei permessi per le notifiche
   static String getNotificationPermission() {
     try {
       if (_isNotificationSupported()) {
-        return js.context['Notification']['permission'];
+        final js.JsObject notification = js.context['Notification'] as js.JsObject;
+        final dynamic permissionValue = notification['permission'];
+        // Assicura che il valore sia convertito in String
+        return permissionValue?.toString() ?? 'unknown';
       }
       return 'not-supported';
     } catch (e) {
@@ -128,11 +144,11 @@ class NotificationService {
       }
 
       // Invia messaggio al Service Worker per mostrare notifica di test
-      if (js.context.hasProperty('navigator')) {
-        final navigator = js.context['navigator'];
-        if (navigator != null && navigator.hasProperty('serviceWorker')) {
-          final registration = await js.context
-              .callMethod('eval', <String>['navigator.serviceWorker.ready']);
+      if (js.context.hasProperty('navigator') as bool) {
+        final js.JsObject? navigator = js.context['navigator'] as js.JsObject?;
+        if (navigator != null && (navigator.hasProperty('serviceWorker') as bool)) {
+          final js.JsObject registration = await js.context
+              .callMethod('eval', <String>['navigator.serviceWorker.ready']) as js.JsObject;
 
           // Invia messaggio al SW
           registration.callMethod('postMessage', <dynamic>[
