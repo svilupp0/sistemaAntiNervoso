@@ -30,11 +30,29 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SCHEDULE_NOTIFICATIONS') {
     const { startDate, cycleDays } = event.data;
+    // Prima cancella le notifiche esistenti
+    clearScheduledNotifications();
+    // Poi programma le nuove
     scheduleNotifications(startDate, cycleDays);
   }
   
   if (event.data && event.data.type === 'CLEAR_NOTIFICATIONS') {
     clearScheduledNotifications();
+  }
+  
+  if (event.data && event.data.type === 'SHOW_TEST_NOTIFICATION_NOW') {
+    const title = event.data.title || '🧪 Test notifica';
+    const body = event.data.body || 'Notifica di test dal Service Worker';
+    const icon = event.data.icon || 'icons/Icon-192.png';
+    
+    self.registration.showNotification(title, {
+      body: body,
+      icon: icon,
+      badge: 'icons/Icon-192.png',
+      requireInteraction: false,
+      vibrate: [200, 100, 200],
+      data: './'
+    });
   }
 });
 
@@ -90,7 +108,7 @@ function scheduleNotifications(startDateStr, cycleDays) {
 
 // Funzione per programmare una singola notifica
 function scheduleNotification(delay, options) {
-  setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     self.registration.showNotification(options.title, {
       body: options.body,
       icon: options.icon,
@@ -100,28 +118,37 @@ function scheduleNotification(delay, options) {
       vibrate: [200, 100, 200], // Vibrazione
       data: './'
     });
+    // Rimuovi il timeout completato dalla mappa
+    scheduledTimeouts.delete(options.tag);
   }, delay);
+  
+  // Salva il timeout ID per poterlo cancellare se necessario
+  scheduledTimeouts.set(options.tag, timeoutId);
 }
+
+// Storage per gestire i timeout delle notifiche
+let scheduledTimeouts = new Map();
 
 // Funzione per cancellare notifiche programmate
 function clearScheduledNotifications() {
-  // Nota: setTimeout non può essere cancellato facilmente in SW
-  // Le notifiche future verranno comunque mostrate
-  console.log('Richiesta cancellazione notifiche ricevuta');
+  // Cancella tutti i timeout programmati
+  scheduledTimeouts.forEach((timeoutId, key) => {
+    clearTimeout(timeoutId);
+  });
+  scheduledTimeouts.clear();
+  console.log('Tutte le notifiche programmate sono state cancellate');
 }
 
 console.log('Service Worker Sistema Anti-Nervoso caricato con successo!');
-self.addEventListener('message', (event) => {
-  try { console.log('SW: message event received', event.data); } catch (_) {}
-  if (event.data && event.data.type === 'SHOW_TEST_NOTIFICATION_NOW') {
-    const title = (event.data && event.data.title) || '🧪 Test notifica';
-    const body = (event.data && event.data.body) || 'Notifica di test dal Service Worker';
-    const icon = (event.data && event.data.icon) || 'icons/Icon-192.png';
-    const options = { body, icon };
-    if (event.waitUntil) {
-      event.waitUntil(self.registration.showNotification(title, options));
-    } else {
-      self.registration.showNotification(title, options);
-    }
-  }
+
+// Gestione installazione SW
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installato');
+  self.skipWaiting();
+});
+
+// Gestione attivazione SW
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker attivato');
+  event.waitUntil(self.clients.claim());
 });

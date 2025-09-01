@@ -6,9 +6,11 @@ Un'app Flutter divertente e colorata per il tracciamento del ciclo mestruale con
 
 - 🌈 **Interfaccia Arcobaleno**: Design colorato e allegro
 - 📅 **Calendario Umore**: Visualizzazione dei giorni con codici colore
+- 🔔 **Notifiche Push**: Sistema completo senza backend
 - 💾 **Persistenza Dati**: Salvataggio automatico delle informazioni
 - 🎭 **Animazioni**: Emoji fluttuanti per un'esperienza divertente
 - ⚡ **Performance Ottimizzate**: Codice efficiente e responsive
+- 🌐 **Deploy Facile**: Pronto per GitHub Pages
 
 ## 🚀 Come Iniziare
 
@@ -57,6 +59,12 @@ lib/
 - Calcolo automatico prossimo ciclo
 - Avviso anticipato per il partner
 
+### Sistema Notifiche
+- 🔔 **Notifiche Automatiche**: Giorni gialli e rossi
+- 🧪 **Test Notifiche**: Verifica funzionamento
+- 💾 **Persistenza Locale**: Senza bisogno di backend
+- 🌐 **Cross-Platform**: Desktop e mobile
+
 ### Calendario Umore
 - 🟢 **Verde**: Giorni tranquilli
 - 🟡 **Giallo**: Dolori/stranita
@@ -71,12 +79,32 @@ flutter test
 
 ## 📱 Piattaforme Supportate
 
-- ✅ Android
-- ✅ iOS
-- ✅ Web
-- ✅ Windows
-- ✅ macOS
-- ✅ Linux
+- ✅ **Web Desktop** (Chrome, Firefox, Edge)
+- ✅ **Web Mobile** (Android Chrome, iOS Safari)
+- ✅ **GitHub Pages** (Deploy gratuito)
+- ✅ **Hosting Statico** (Netlify, Vercel)
+- ⚠️ **App Mobile** (Possibile con modifiche)
+
+### Notifiche Push
+- ✅ **Desktop**: Supporto completo
+- ✅ **Android Web**: Supporto completo
+- ⚠️ **iOS Web**: Limitazioni Apple
+
+## 🚀 Deploy
+
+### GitHub Pages (Gratuito)
+```bash
+flutter build web --release
+cp -r build/web/* docs/
+git add .
+git commit -m "Deploy to GitHub Pages"
+git push origin main
+```
+
+Vedi [DEPLOY_GITHUB_PAGES.md](DEPLOY_GITHUB_PAGES.md) per la guida completa.
+
+### Sistema Notifiche
+Il sistema funziona **senza backend**! Vedi [NOTIFICHE_SENZA_BACKEND.md](NOTIFICHE_SENZA_BACKEND.md) per dettagli.
 
 ## 🤝 Contribuire
 

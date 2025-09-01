@@ -40,27 +40,24 @@
     const VAPID_PUBLIC_KEY = 'BGoUDVogUM_NuHP_TP7T78oMkiZMCQXaT1LJNEjSiuT7nVfHRJY_aDrG2DZ13r6UA5u6dt_LuA4OSyEFoo30hZY';
 
     async function registerSWAndSubscribe() {
-      // Registra il tuo SW
-      const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
+      try {
+        // Registra il Service Worker
+        const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
+        console.log('Service Worker registrato con successo');
 
-      // iOS richiede un gesto dell'utente prima di chiedere il permesso
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') return null;
+        // Richiedi permesso per le notifiche
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          console.log('Permesso notifiche negato');
+          return false;
+        }
 
-      // Crea la subscription Web Push (standard VAPID)
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
-
-      // Invia la subscription al tuo backend per salvarla
-      await fetch('api/subscribe', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(sub),
-      });
-
-      return sub;
+        console.log('Permesso notifiche concesso');
+        return true;
+      } catch (error) {
+        console.error('Errore nella registrazione SW:', error);
+        return false;
+      }
     }
 
     // utilità VAPID
@@ -77,6 +74,13 @@
     async function scheduleNotifications(startDate, cycleDays = 28) {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
+        
+        // Salva i dati localmente per persistenza
+        localStorage.setItem('cycleData', JSON.stringify({
+          startDate: startDate.toISOString(),
+          cycleDays: cycleDays,
+          scheduledAt: new Date().toISOString()
+        }));
         
         // Invia i dati del ciclo al service worker
         registration.active.postMessage({
@@ -96,13 +100,42 @@
         registration.active.postMessage({
           type: 'CLEAR_NOTIFICATIONS'
         });
+        
+        // Rimuovi i dati salvati localmente
+        localStorage.removeItem('cycleData');
+        console.log('Notifiche cancellate e dati locali rimossi');
       }
     }
+    
+    // Funzione per ripristinare notifiche al caricamento della pagina
+    async function restoreNotifications() {
+      const savedData = localStorage.getItem('cycleData');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          const startDate = new Date(data.startDate);
+          const now = new Date();
+          
+          // Se la data è ancora valida (non troppo vecchia), ripristina le notifiche
+          const daysDiff = (now - startDate) / (1000 * 60 * 60 * 24);
+          if (daysDiff < data.cycleDays * 3) { // Entro 3 cicli
+            await scheduleNotifications(startDate, data.cycleDays);
+            console.log('Notifiche ripristinate dal salvataggio locale');
+          }
+        } catch (error) {
+          console.error('Errore nel ripristino notifiche:', error);
+        }
+      }
+    }
+    
+    // Ripristina notifiche al caricamento della pagina
+    window.addEventListener('load', restoreNotifications);
 
     // Esponi le funzioni globalmente per l'uso da Flutter
     window.scheduleNotifications = scheduleNotifications;
     window.clearNotifications = clearNotifications;
     window.registerSWAndSubscribe = registerSWAndSubscribe;
+    window.restoreNotifications = restoreNotifications;
   </script>
 </body>
 </html>

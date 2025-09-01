@@ -119,7 +119,22 @@ class NotificationService {
         return;
       }
 
-      // Crea una notifica di test
+      // Invia messaggio al Service Worker per mostrare notifica di test
+      if (js.context.hasProperty('navigator') && 
+          js.context['navigator'].hasProperty('serviceWorker')) {
+        final serviceWorker = js.context['navigator']['serviceWorker'];
+        final registration = await js.context.callMethod('eval', [
+          'navigator.serviceWorker.ready'
+        ]);
+        
+        // Invia messaggio al SW
+        registration.callMethod('postMessage', [js.JsObject.jsify({
+          'type': 'SHOW_TEST_NOTIFICATION_NOW',
+          'title': '🧪 Test Sistema Anti-Nervoso',
+          'body': 'Notifica di test funzionante! 🎉',
+          'icon': 'icons/Icon-192.png'
+        })]);
+      }
 
       print('Notifica di test inviata');
     } catch (e) {
