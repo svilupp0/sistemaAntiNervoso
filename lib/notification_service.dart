@@ -12,7 +12,7 @@ class NotificationService {
       }
 
       // Registra il service worker e richiede permessi
-      await _callJSFunction('registerSWAndSubscribe');
+      await _callJSFunction('registerSWAndSubscribe', <dynamic>[]);
       print('Service worker registrato e permessi richiesti');
       return true;
     } catch (e) {
@@ -33,7 +33,7 @@ class NotificationService {
       }
 
       // Chiama la funzione JavaScript per programmare le notifiche
-      js.context.callMethod('scheduleNotifications', [
+      js.context.callMethod('scheduleNotifications', <dynamic>[
         _dateToJSDate(startDate),
         cycleDays,
       ]);
@@ -54,7 +54,7 @@ class NotificationService {
         return;
       }
 
-      await _callJSFunction('clearNotifications');
+      await _callJSFunction('clearNotifications', <dynamic>[]);
       print('Notifiche cancellate');
     } catch (e) {
       print('Errore nella cancellazione delle notifiche: $e');
@@ -63,9 +63,17 @@ class NotificationService {
 
   /// Verifica se le notifiche sono supportate dal browser
   static bool _isNotificationSupported() {
-    return js.context.hasProperty('Notification') &&
-        js.context.hasProperty('navigator') &&
-        js.context['navigator'].hasProperty('serviceWorker');
+    if (!js.context.hasProperty('Notification')) {
+      return false;
+    }
+    if (!js.context.hasProperty('navigator')) {
+      return false;
+    }
+    final navigator = js.context['navigator'];
+    if (navigator == null) {
+      return false;
+    }
+    return navigator.hasProperty('serviceWorker');
   }
 
   /// Chiama una funzione JavaScript
@@ -87,7 +95,7 @@ class NotificationService {
 
   /// Converte una DateTime Dart in un oggetto Date JavaScript
   static js.JsObject _dateToJSDate(DateTime date) {
-    return js.JsObject(js.context['Date'], [
+    return js.JsObject(js.context['Date'], <int>[
       date.year,
       date.month - 1, // JavaScript usa mesi 0-based
       date.day,
@@ -120,20 +128,22 @@ class NotificationService {
       }
 
       // Invia messaggio al Service Worker per mostrare notifica di test
-      if (js.context.hasProperty('navigator') &&
-          js.context['navigator'].hasProperty('serviceWorker')) {
-        final registration = await js.context
-            .callMethod('eval', ['navigator.serviceWorker.ready']);
+      if (js.context.hasProperty('navigator')) {
+        final navigator = js.context['navigator'];
+        if (navigator != null && navigator.hasProperty('serviceWorker')) {
+          final registration = await js.context
+              .callMethod('eval', <String>['navigator.serviceWorker.ready']);
 
-        // Invia messaggio al SW
-        registration.callMethod('postMessage', [
-          js.JsObject.jsify({
-            'type': 'SHOW_TEST_NOTIFICATION_NOW',
-            'title': '🧪 Test Sistema Anti-Nervoso',
-            'body': 'Notifica di test funzionante! 🎉',
-            'icon': 'icons/Icon-192.png'
-          })
-        ]);
+          // Invia messaggio al SW
+          registration.callMethod('postMessage', <dynamic>[
+            js.JsObject.jsify(<String, String>{
+              'type': 'SHOW_TEST_NOTIFICATION_NOW',
+              'title': '🧪 Test Sistema Anti-Nervoso',
+              'body': 'Notifica di test funzionante! 🎉',
+              'icon': 'icons/Icon-192.png'
+            })
+          ]);
+        }
       }
 
       print('Notifica di test inviata');
