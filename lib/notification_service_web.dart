@@ -1,5 +1,4 @@
 import 'dart:js' as js;
-import 'package:flutter/foundation.dart';
 import 'utils/app_logger.dart';
 
 /// Implementazione web per le notifiche push
@@ -10,16 +9,19 @@ class NotificationServiceImpl {
     try {
       // Verifica se le notifiche sono supportate
       if (!_isNotificationSupported()) {
-        AppLogger.notificationError('Notifiche non supportate su questo browser');
+        AppLogger.notificationError(
+            'Notifiche non supportate su questo browser');
         return false;
       }
 
       // Registra il service worker e richiede permessi
       await _callJSFunction('registerSWAndSubscribe', <dynamic>[]);
-      AppLogger.notificationInfo('Service worker registrato e permessi richiesti');
+      AppLogger.notificationInfo(
+          'Service worker registrato e permessi richiesti');
       return true;
     } catch (e) {
-      AppLogger.notificationError('Errore nell\'inizializzazione delle notifiche', e);
+      AppLogger.notificationError(
+          'Errore nell\'inizializzazione delle notifiche', e);
       return false;
     }
   }
@@ -45,7 +47,8 @@ class NotificationServiceImpl {
         'Notifiche programmate per il ciclo iniziato il: ${startDate.toIso8601String()}',
       );
     } catch (e) {
-      AppLogger.notificationError('Errore nella programmazione delle notifiche', e);
+      AppLogger.notificationError(
+          'Errore nella programmazione delle notifiche', e);
     }
   }
 
@@ -60,7 +63,8 @@ class NotificationServiceImpl {
       await _callJSFunction('clearNotifications', <dynamic>[]);
       AppLogger.notificationInfo('Notifiche cancellate');
     } catch (e) {
-      AppLogger.notificationError('Errore nella cancellazione delle notifiche', e);
+      AppLogger.notificationError(
+          'Errore nella cancellazione delle notifiche', e);
     }
   }
 
@@ -82,7 +86,8 @@ class NotificationServiceImpl {
       // Verifica supporto Service Worker
       return navigator.hasProperty('serviceWorker');
     } catch (e) {
-      AppLogger.notificationError('Errore nella verifica supporto notifiche', e);
+      AppLogger.notificationError(
+          'Errore nella verifica supporto notifiche', e);
       return false;
     }
   }
@@ -131,7 +136,8 @@ class NotificationServiceImpl {
   static String getNotificationPermission() {
     try {
       if (_isNotificationSupported()) {
-        final js.JsObject notification = js.context['Notification'] as js.JsObject;
+        final js.JsObject notification =
+            js.context['Notification'] as js.JsObject;
         final dynamic permissionValue = notification['permission'];
         // Assicura che il valore sia convertito in String
         return permissionValue?.toString() ?? 'unknown';
@@ -155,8 +161,8 @@ class NotificationServiceImpl {
       if (js.context.hasProperty('navigator')) {
         final js.JsObject? navigator = js.context['navigator'] as js.JsObject?;
         if (navigator != null && navigator.hasProperty('serviceWorker')) {
-          final js.JsObject registration = await js.context
-              .callMethod('eval', <String>['navigator.serviceWorker.ready']) as js.JsObject;
+          final js.JsObject registration = await js.context.callMethod(
+              'eval', <String>['navigator.serviceWorker.ready']) as js.JsObject;
 
           // Invia messaggio al SW
           registration.callMethod('postMessage', <dynamic>[
@@ -172,7 +178,8 @@ class NotificationServiceImpl {
 
       AppLogger.notificationInfo('Notifica di test inviata');
     } catch (e) {
-      AppLogger.notificationError('Errore nell\'invio della notifica di test', e);
+      AppLogger.notificationError(
+          'Errore nell\'invio della notifica di test', e);
     }
   }
 }
