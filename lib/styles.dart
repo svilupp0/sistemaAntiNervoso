@@ -10,33 +10,43 @@ class RainbowColors {
   static const indigo = Colors.indigo;
   static const purple = Colors.purple;
 
-  static const List<Color> all = <Color>[red, orange, yellow, green, blue, indigo, purple];
+  static const List<Color> all = <Color>[
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    purple
+  ];
 }
 
 // Gradient per sfondo
-final LinearGradient rainbowGradient = LinearGradient(
+const LinearGradient rainbowGradient = LinearGradient(
   colors: RainbowColors.all,
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
 );
 
 // Stile testo principale
-final TextStyle mainTitleStyle = TextStyle(
+const TextStyle mainTitleStyle = TextStyle(
   fontSize: 28,
   fontWeight: FontWeight.bold,
   color: Colors.white,
-  shadows: <Shadow>[Shadow(blurRadius: 3, color: Colors.black, offset: Offset(1, 1))],
+  shadows: <Shadow>[
+    Shadow(blurRadius: 3, color: Colors.black, offset: Offset(1, 1))
+  ],
 );
 
 // Stile testo info
-final TextStyle infoTextStyle = TextStyle(
+const TextStyle infoTextStyle = TextStyle(
   fontSize: 22,
   color: Colors.white,
 );
 
 // Stile bottoni
 ButtonStyle rainbowButtonStyle(Color color) => ElevatedButton.styleFrom(
-  backgroundColor: color,
-  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-);
+      backgroundColor: color,
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );

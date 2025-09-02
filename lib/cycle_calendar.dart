@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'constants.dart';
@@ -57,17 +59,15 @@ class CycleCalendar extends StatelessWidget {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     // Prepara i dati per il GridView
-    List<Map<String, dynamic>> giorni = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> giorni = <Map<String, dynamic>>[];
 
     for (int i = 0; i < durataCiclo; i++) {
-      DateTime giorno = startCiclo.add(Duration(days: i));
-      Color colore = coloreGiorno(giorno);
-      
+      final DateTime giorno = startCiclo.add(Duration(days: i));
+      final Color colore = coloreGiorno(giorno);
+
       giorni.add(<String, dynamic>{
         'numero': DateFormat('d').format(giorno),
         'colore': colore,
@@ -80,19 +80,21 @@ class CycleCalendar extends StatelessWidget {
         // Calendario in formato griglia settimanale
         GridView.count(
           shrinkWrap: true, // il Grid prende solo lo spazio necessario
-          physics: const NeverScrollableScrollPhysics(), // disabilita lo scroll interno
+          physics:
+              const NeverScrollableScrollPhysics(), // disabilita lo scroll interno
           crossAxisCount: 7, // 7 giorni per riga (una settimana)
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 1.0, // quadrati perfetti
           children: giorni.map((Map<String, dynamic> giorno) {
+            final withOpacity = Colors.black.withOpacity(0.1);
             return Container(
               decoration: BoxDecoration(
                 color: giorno['colore'] as Color,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: withOpacity,
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
@@ -111,15 +113,15 @@ class CycleCalendar extends StatelessWidget {
             );
           }).toList(),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Legenda dei colori
         _buildLegenda(),
       ],
     );
   }
-  
+
   /// Widget per la legenda dei colori
   Widget _buildLegenda() {
     return Container(
@@ -158,7 +160,7 @@ class CycleCalendar extends StatelessWidget {
       ),
     );
   }
-  
+
   /// Item singolo della legenda
   Widget _legendaItem(Color colore, String testo) {
     return Row(

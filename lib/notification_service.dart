@@ -1,22 +1,29 @@
 import 'dart:js' as js;
+import 'package:flutter/foundation.dart';
+import 'utils/app_logger.dart';
 
 /// Service per gestire le notifiche push del Sistema Anti-Nervoso
 class NotificationService {
   /// Registra il service worker e richiede i permessi per le notifiche
   static Future<bool> initialize() async {
+    if (!kIsWeb) {
+      AppLogger.notificationInfo('Notifiche supportate solo su web');
+      return false;
+    }
+    
     try {
       // Verifica se le notifiche sono supportate
       if (!_isNotificationSupported()) {
-        print('Notifiche non supportate su questo browser');
+        AppLogger.notificationError('Notifiche non supportate su questo browser');
         return false;
       }
 
       // Registra il service worker e richiede permessi
       await _callJSFunction('registerSWAndSubscribe', <dynamic>[]);
-      print('Service worker registrato e permessi richiesti');
+      AppLogger.notificationInfo('Service worker registrato e permessi richiesti');
       return true;
     } catch (e) {
-      print('Errore nell\'inizializzazione delle notifiche: $e');
+      AppLogger.notificationError('Errore nell\'inizializzazione delle notifiche', e);
       return false;
     }
   }
@@ -26,9 +33,11 @@ class NotificationService {
     DateTime startDate, {
     int cycleDays = 28,
   }) async {
+    if (!kIsWeb) return;
+    
     try {
       if (!_isNotificationSupported()) {
-        print('Notifiche non supportate');
+        AppLogger.notificationError('Notifiche non supportate');
         return;
       }
 
@@ -38,37 +47,41 @@ class NotificationService {
         cycleDays,
       ]);
 
-      print(
+      AppLogger.notificationInfo(
         'Notifiche programmate per il ciclo iniziato il: ${startDate.toIso8601String()}',
       );
     } catch (e) {
-      print('Errore nella programmazione delle notifiche: $e');
+      AppLogger.notificationError('Errore nella programmazione delle notifiche', e);
     }
   }
 
   /// Cancella tutte le notifiche programmate
   static Future<void> clearNotifications() async {
+    if (!kIsWeb) return;
+    
     try {
       if (!_isNotificationSupported()) {
-        print('Notifiche non supportate');
+        AppLogger.notificationError('Notifiche non supportate');
         return;
       }
 
       await _callJSFunction('clearNotifications', <dynamic>[]);
-      print('Notifiche cancellate');
+      AppLogger.notificationInfo('Notifiche cancellate');
     } catch (e) {
-      print('Errore nella cancellazione delle notifiche: $e');
+      AppLogger.notificationError('Errore nella cancellazione delle notifiche', e);
     }
   }
 
   /// Verifica se le notifiche sono supportate dal browser
   static bool _isNotificationSupported() {
+    if (!kIsWeb) return false;
+    
     // Verifica supporto Notification API
-    if (!(js.context.hasProperty('Notification') as bool)) {
+    if (!js.context.hasProperty('Notification')) {
       return false;
     }
     // Verifica presenza navigator
-    if (!(js.context.hasProperty('navigator') as bool)) {
+    if (!js.context.hasProperty('navigator')) {
       return false;
     }
     final js.JsObject? navigator = js.context['navigator'] as js.JsObject?;
@@ -76,7 +89,7 @@ class NotificationService {
       return false;
     }
     // Verifica supporto Service Worker
-    return navigator.hasProperty('serviceWorker') as bool;
+    return navigator.hasProperty('serviceWorker');
   }
 
   /// Chiama una funzione JavaScript
@@ -85,13 +98,13 @@ class NotificationService {
     List<dynamic>? args,
   ]) async {
     try {
-      if (js.context.hasProperty(functionName) as bool) {
+      if (js.context.hasProperty(functionName)) {
         return js.context.callMethod(functionName, args);
       } else {
         throw Exception('Funzione JavaScript $functionName non trovata');
       }
     } catch (e) {
-      print('Errore nella chiamata a $functionName: $e');
+      AppLogger.notificationError('Errore nella chiamata a $functionName', e);
       rethrow;
     }
   }
@@ -121,6 +134,8 @@ class NotificationService {
 
   /// Verifica lo stato dei permessi per le notifiche
   static String getNotificationPermission() {
+    if (!kIsWeb) return 'not-supported';
+    
     try {
       if (_isNotificationSupported()) {
         final js.JsObject notification = js.context['Notification'] as js.JsObject;
@@ -130,23 +145,25 @@ class NotificationService {
       }
       return 'not-supported';
     } catch (e) {
-      print('Errore nel controllo dei permessi: $e');
+      AppLogger.notificationError('Errore nel controllo dei permessi', e);
       return 'error';
     }
   }
 
   /// Mostra una notifica di test
   static Future<void> showTestNotification() async {
+    if (!kIsWeb) return;
+    
     try {
       if (!_isNotificationSupported()) {
-        print('Notifiche non supportate');
+        AppLogger.notificationError('Notifiche non supportate');
         return;
       }
 
       // Invia messaggio al Service Worker per mostrare notifica di test
-      if (js.context.hasProperty('navigator') as bool) {
+      if (js.context.hasProperty('navigator')) {
         final js.JsObject? navigator = js.context['navigator'] as js.JsObject?;
-        if (navigator != null && (navigator.hasProperty('serviceWorker') as bool)) {
+        if (navigator != null && navigator.hasProperty('serviceWorker')) {
           final js.JsObject registration = await js.context
               .callMethod('eval', <String>['navigator.serviceWorker.ready']) as js.JsObject;
 
@@ -162,9 +179,9 @@ class NotificationService {
         }
       }
 
-      print('Notifica di test inviata');
+      AppLogger.notificationInfo('Notifica di test inviata');
     } catch (e) {
-      print('Errore nell\'invio della notifica di test: $e');
+      AppLogger.notificationError('Errore nell\'invio della notifica di test', e);
     }
   }
 }

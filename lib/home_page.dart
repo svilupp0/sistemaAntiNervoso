@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nome_app/cycle_calendar.dart';
 import 'utils/cycle_calculator.dart';
+import 'utils/app_logger.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 import 'styles.dart';
@@ -40,18 +41,18 @@ class _HomePageState extends State<HomePage> {
 
       final bool success = await NotificationService.initialize();
       if (success) {
-        print('Servizio notifiche inizializzato con successo');
+        AppLogger.ui('Servizio notifiche inizializzato con successo');
         setState(() {
           _notificationsEnabled = true;
         });
       } else {
-        print('Impossibile inizializzare le notifiche');
+        AppLogger.uiError('Impossibile inizializzare le notifiche');
         setState(() {
           _notificationsEnabled = false;
         });
       }
     } catch (e) {
-      print('Errore nell\'inizializzazione delle notifiche: $e');
+      AppLogger.uiError('Errore nell\'inizializzazione delle notifiche', e);
       setState(() {
         _notificationsEnabled = false;
       });
@@ -65,9 +66,9 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _notificationsEnabled = permission == 'granted';
       });
-      print('Stato permessi notifiche: $permission');
+      AppLogger.ui('Stato permessi notifiche: $permission');
     } catch (e) {
-      print('Errore nel controllo permessi: $e');
+      AppLogger.uiError('Errore nel controllo permessi', e);
     }
   }
 
@@ -106,7 +107,17 @@ class _HomePageState extends State<HomePage> {
         }
       }
     } catch (e) {
-      print('Errore nell\'attivazione delle notifiche: $e');
+      AppLogger.uiError('Errore nell\'attivazione delle notifiche', e);
+      // Mostra errore all'utente
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Errore nell\'attivazione delle notifiche'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -124,7 +135,17 @@ class _HomePageState extends State<HomePage> {
         );
       }
     } catch (e) {
-      print('Errore nell\'invio della notifica di test: $e');
+      AppLogger.uiError('Errore nell\'invio della notifica di test', e);
+      // Mostra errore all'utente
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Errore nell\'invio della notifica di test'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -202,7 +223,7 @@ class _HomePageState extends State<HomePage> {
         );
       }
     } catch (e) {
-      print('Errore nella programmazione delle notifiche: $e');
+      AppLogger.uiError('Errore nella programmazione delle notifiche', e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
