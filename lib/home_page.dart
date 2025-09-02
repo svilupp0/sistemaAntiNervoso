@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:nome_app/cycle_calendar.dart';
 import 'utils/cycle_calculator.dart';
@@ -254,8 +256,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          Container(decoration: BoxDecoration(gradient: rainbowGradient)),
-          FloatingEmojis(
+          Container(decoration: const BoxDecoration(gradient: rainbowGradient)),
+          const FloatingEmojis(
             emojis: AppConstants.emojiDisponibili,
             count: AppConstants.numeroEmojiDefault,
           ),
@@ -269,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       AppConstants.titoloApp,
                       style: mainTitleStyle,
                       textAlign: TextAlign.center,
@@ -322,7 +324,8 @@ class _HomePageState extends State<HomePage> {
                         style: infoTextStyle,
                       ),
                       const SizedBox(height: 20),
-                      Text(AppConstants.calendarioUmore, style: infoTextStyle),
+                      const Text(AppConstants.calendarioUmore,
+                          style: infoTextStyle),
                       const SizedBox(height: 10),
                       CycleCalendar(
                         startCiclo: inizioCiclo!,
